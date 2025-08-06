@@ -1,0 +1,7 @@
+/front_left_drive_31/controller_status/pos_estimate,/front_left_drive_41/controller_status/pos_estimate,/front_left_drive_33/controller_status/pos_estimate,/front_left_steer_21/controller_status/pos_estimate,__time,/rear_right_drive_36/controller_status/pos_estimate,/front_left_drive_35/controller_status/pos_estimate,/rear_right_drive_32/controller_status/pos_estimate,/rear_right_drive_34/controller_status/pos_estimate
+1,6,1,0,1,100,1,100,100
+20.7,5,20.7,0,2,80,20,80,80
+40,4,40,0,3,60,40,60,60
+60,2,60,0,4,40,60,40,40
+80,107,80,,5,20,80,20,20
+100,,100,0,6,0,100,0,0
