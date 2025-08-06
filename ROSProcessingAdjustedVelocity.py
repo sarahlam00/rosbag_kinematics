@@ -53,7 +53,7 @@ for i in range(number_of_modules):
         suspension_pivot_offset_list[i]=[-chassis_width/2,chassis_length/2-bay*chassis_length/(number_of_modules/2-1)]
 
 #Opening file
-filename = "tuesday_test_1.csv"  # File name
+filename = "tuesday_test_2.csv"  # File name
 file_handle = open(filename, "r", encoding='utf8')
 list=[]
 table: List[Dict[str,float]] = []
@@ -138,50 +138,52 @@ for row in df:
     total_motor_state.append(motor_state)
 # print("motor", total_motor_state[16])
 
-previous_motor_state=[[0 for _ in range(4)] for _ in range(num_of_legs)]
+previous_motorA_state=[[0 for _ in range(3)] for _ in range(num_of_legs)]
+previous_motorB_state=[[0 for _ in range(3)] for _ in range(num_of_legs)]
+previous_steer_state=[0]*6
 velocity_list_rev=[[0 for _ in range(6)] for _ in range(len(total_time_array))]
 drive_mag_list=[[0 for _ in range(6)] for _ in range(len(total_time_array))]
 steer_position_list=[[0 for _ in range(6)] for _ in range(len(total_time_array))]
 # print(steer_position_list)
 prev_velocity=0
-velocity=0
+velocityB=0
+velocityA=0
 steer_position=0
 #Getting drive vector 
 #Gets drive list --> for each time [mod1_vec, ..., mod6_vec]
 # print(previous_motor_state)
+velocity_list=[[0 for _ in range(6)] for _ in range(len(total_time_array))]
 
 #Previous_motor_state in the form of [motor_position, timestamp, drive_velocity, steer_position]
-
 for t in range(len(total_time_array)):
-    for module in range(num_of_legs):
-        #Checking Drive
-        if total_motor_state[t][module][2] is not None: 
-            velocity=(total_motor_state[t][module][2]-previous_motor_state[module][0])/(total_time_array[t]-previous_motor_state[module][1])
-            # velocityB=(total_motor_state[t][module][2]-previous_motor_state[module][0])/(total_time_array[t]-previous_motor_state[module][1])
-            previous_motor_state[module][0]=total_motor_state[t][module][2]
-            previous_motor_state[module][1]=total_time_array[t]
-            previous_motor_state[module][2]=velocity
-        elif total_motor_state[t][module][2] is None:
-            velocity=previous_motor_state[module][2]      
-            #Checking Steer  
-        if total_motor_state[t][module][1] is not None:
-            steer_position=total_motor_state[t][module][1]
-            # print(steer_position)
-            previous_motor_state[module][3]=steer_position
-        elif total_motor_state[t][module][1] is None:
-            steer_position=previous_motor_state[module][3]
-        velocity_list_rev[t][module]=velocity
-        steer_position_list[t][module]=steer_position
-        if module%2: 
-            drive_mag_list[t][module]=((velocity/drive_gear_ratio)*2*math.pi*(wheel_diameter/2)) #converting rps to rad/sec and then multiplying by radius 
-            steer_position_list[t][module]=2*np.pi*steer_position
-        elif not module%2: 
-            drive_mag_list[t][module]=(((velocity/drive_gear_ratio)*2*math.pi*(wheel_diameter/2))) #converting rps to rad/sec and then multiplying by radius 
-            steer_position_list[t][module]=np.pi-(2*np.pi*steer_position)
-            
-# print(len(steer_position_list))
-# print(len(total_time_array))
-# print(drive_mag_list)
+    for i in range(number_of_modules):
+        if total_motor_state[t][i][2] is not None:
+            # print(total_motor_state[t][i][2])
+            # print("motor",previous_motorA_state)
+            velocityA=(total_motor_state[t][i][2]-previous_motorA_state[i][1])/(total_time_array[t]-previous_motorA_state[i][0])
+            previous_motorA_state[i][0]=total_time_array[t]
+            previous_motorA_state[i][1]=total_motor_state[t][i][2]
+            previous_motorA_state[i][2]=velocityA
+        elif total_motor_state[t][i][2] is None:
+            velocityA=previous_motorA_state[i][2]
+        if total_motor_state[t][i][3] is not None:
+            velocityB=(total_motor_state[t][i][3]-previous_motorB_state[i][1])/(total_time_array[t]-previous_motorB_state[i][0])
+            previous_motorB_state[i][0]=total_time_array[t]
+            previous_motorB_state[i][1]=total_motor_state[t][i][3]
+            previous_motorB_state[i][2]=velocityB
+        elif total_motor_state[t][i][3] is None:
+            velocityB=previous_motorB_state[i][2]
+        velocity_list[t][i]=(((velocityA+velocityB)/2)/drive_gear_ratio)*np.pi*wheel_diameter
+        if total_motor_state[t][i][1] is not None:
+            steer_position=total_motor_state[t][i][1]
+            previous_steer_state[i]=total_motor_state[t][i][1]
+        elif total_motor_state[t][i][1] is None: 
+            steer_position=previous_steer_state[i]
+        if i%2: 
+            steer_position_list[t][i]=2*np.pi*steer_position
+        elif i%2 is not None: 
+            steer_position_list[t][i]=np.pi+(2*np.pi*steer_position)
+
 def get_drive_vector(steer_position_list,drive_mag_list):
     steer_vector=[0]*number_of_modules
     drive_vector_list=[0]*number_of_modules
@@ -189,7 +191,6 @@ def get_drive_vector(steer_position_list,drive_mag_list):
         steer_vector=get_vector(1, steer_position_list[i])        
         drive_vector_list[i]=[drive_mag_list[i]*steer_vector[1], drive_mag_list[i]*-steer_vector[0]]
     return drive_vector_list
-
 
 
 robot_velocity=[0]*len(total_time_array)
@@ -200,24 +201,24 @@ robot_y_position=[0]*len(total_time_array)
 position_x=0
 position_y=0
 for t in range(len(total_time_array)-1):
-    time_step=total_time_array[t+1]-total_time_array[t]
-    drive_vector=get_drive_vector(steer_position_list[t],drive_mag_list[t])
-    contacts=get_contact_point(steer_position_list[t],suspension_angles)
-    robot_velocity[t]=get_motion(drive_vector, contacts)
-    robot_x_velocity[t]=robot_velocity[t][0]
-    robot_y_velocity[t]=robot_velocity[t][1]
-    position_x=position_x+robot_velocity[t][0]*time_step
-    position_y=position_y+robot_velocity[t][1]*time_step
-    robot_x_position[t]=position_x
-    robot_y_position[t]=position_y
+        time_step=total_time_array[t+1]-total_time_array[t]
+        drive_vector=get_drive_vector(steer_position_list[t],velocity_list[t])
+        contacts=get_contact_point(steer_position_list[t],suspension_angles)
+        robot_velocity[t]=get_motion(drive_vector, contacts)
+        robot_x_velocity[t]=robot_velocity[t][0]
+        robot_y_velocity[t]=robot_velocity[t][1]
+        position_x=position_x+robot_velocity[t][0]*time_step
+        position_y=position_y+robot_velocity[t][1]*time_step
+        robot_x_position[t]=position_x
+        robot_y_position[t]=position_y
 
 # print("x",robot_x_position)
 
 # print("y",robot_y_velocity)
 
 
-# test_list=get_drive_vector(steer_position_list[16],drive_mag_list[16])
-# contacts=get_contact_point(steer_position_list[16],suspension_angles)
+# test_list=get_drive_vector(steer_position_list[5],drive_mag_list[5])
+# contacts=get_contact_point(steer_position_list[5],suspension_angles)
 # pivots=get_steer_pivot_point(suspension_angles, suspension_arm_length)
 # c=get_motion(test_list,contacts)
 # print(robot_velocity)
@@ -229,21 +230,24 @@ drive3=[]
 drive4=[]
 drive5=[]
 drive6=[]
-# for i in range(len(total_time_array)):
-#     drive1.append(drive_mag_list[i][0])
-#     drive2.append(drive_mag_list[i][1])
-#     drive3.append(drive_mag_list[i][2])
-#     drive4.append(drive_mag_list[i][3])
-#     drive5.append(drive_mag_list[i][4])
-#     drive6.append(drive_mag_list[i][5])
-
+# print(velocityA)
 for i in range(len(total_time_array)):
-    drive1.append(velocity_list_rev[i][0])
-    drive2.append(velocity_list_rev[i][1])
-    drive3.append(velocity_list_rev[i][2])
-    drive4.append(velocity_list_rev[i][3])
-    drive5.append(velocity_list_rev[i][4])
-    drive6.append(velocity_list_rev[i][5])
+    drive1.append(steer_position_list[i][0])
+    drive2.append(steer_position_list[i][1])
+    drive3.append(steer_position_list[i][2])
+    drive4.append(steer_position_list[i][3])
+    drive5.append(steer_position_list[i][4])
+    drive6.append(steer_position_list[i][5])
+
+# print(velocity_list)
+# print(total_time_array)
+# for i in range(len(total_time_array)):
+#     drive1.append(velocity_list_rev[i][0])
+#     drive2.append(velocity_list_rev[i][1])
+#     drive3.append(velocity_list_rev[i][2])
+#     drive4.append(velocity_list_rev[i][3])
+#     drive5.append(velocity_list_rev[i][4])
+#     drive6.append(velocity_list_rev[i][5])
 
 #Plotting positions for each module 
 # for i in range(len(total_time_array)):
@@ -266,11 +270,11 @@ for i in range(len(total_time_array)):
 # print(drive1)
 # print(c)
 # fig, ax = plt.subplots(figsize=(20, 20))
-list=[range(len(drive6))]
-# print(len(drive1))
-# plt.scatter(robot_x_position, robot_y_position)
-plt.scatter(list,drive6, s=0.1)
-# plt.scatter(total_time_ar/ray, )
+# list=[range(len(drive6))]
+# print(len(drive2))
+plt.scatter(robot_x_position, robot_y_position)
+# plt.scatter(total_time_array,drive6, s=1)
+# plt.scatter(total_time_array, robot_y_velocity)
 
 
 
@@ -360,70 +364,3 @@ plt.show()
 
 # plt.tight_layout()
 # plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# print(velocity_list_rev[4500])
-# print(drive_vector_list[4500])
-# Now I have velolcity --> Translate to drive vectors 
-
-# time & module position list --> Get velocity output (need module states [suspension pos, steer_pos, drive_velocity])--> need to get drive velocity
-# num_of_states=3
-# module_state=[[0 for _ in range(num_of_states)] for _ in range(num_of_legs)]
-# total_module_state=[]
-# for i in range(len(total_time_array)-1):
-#     module_state=[[0 for _ in range(num_of_states)] for _ in range(num_of_legs)]
-#     # print("time",total_time_array[i])
-#     for j in range(num_of_legs):
-#         time_step=total_time_array[i+1]-total_time_array[i]
-#         velocity_motor_A=(total_motor_state[i+1][j][2]-total_motor_state[i][j][2])/time_step
-#         velocity_motor_B=(total_motor_state[i+1][j][3]-total_motor_state[i][j][3])/time_step
-        
-#         average_velocity=(velocity_motor_A+velocity_motor_B)/2
-        # if i==140:
-        #     print("velocity",average_velocity)
-        #     print("motor",total_motor_state[i])
-        #     print("next",total_motor_state[i+1])
-        #     print("time", total_time_array[i])
-        #     print("a",velocity_motor_A)
-        #     print("b",velocity_motor_B)
-        #     print("delta", time_step)
-        # module_state[j][2]=average_velocity
-        
-#         module_state[j][1]=total_motor_state[i][j][1]
-#         # print("average",j, average_velocity)
-#     # print('mod',module_state)
-#     total_module_state.append(module_state)
-# print("total",total_module_state[3625])
-# print(total_time_array[3625])
-
-# def get_velocity(position_list,time_list):
-#     prev_pos=0
-#     prev_time=0
-#     velocity_list=[]
-#     for i in range(len(position_list)):
-#         if position_list[i] is not None: 
-#             velocity=(position_list[i]-prev_pos)/(time_list[i]-prev_time)
-#             prev_pos=position_list[i]
-#             prev_time=time_list[i]
-#             velocity_list.append([velocity,time_list[i]])
-#         # print('hi')
-#     return velocity_list
-
-# position_list=[1,3,6, None, None, 7]
-# time_list=[1,2,3,4,5,6]
-
-# x=get_velocity(position_list, time_list)
-# print(x)
