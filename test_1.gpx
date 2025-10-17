@@ -2,46 +2,7 @@
 <gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1" creator="gpx.py -- https://github.com/tkrajina/gpxpy">
   <trk>
     <trkseg>
-      <trkpt lat="30.6409865" lon="-96.4872755">
-        <ele>82.9</ele>
-        <time>2025-07-31T21:46:18Z</time>
-      </trkpt>
-      <trkpt lat="30.6409865" lon="-96.48727533333333">
-        <ele>82.9</ele>
-        <time>2025-07-31T21:46:19Z</time>
-      </trkpt>
-      <trkpt lat="30.640986333333334" lon="-96.48727783333334">
-        <ele>82.4</ele>
-        <time>2025-07-31T21:46:23Z</time>
-      </trkpt>
-      <trkpt lat="30.640986" lon="-96.487285">
-        <ele>82.1</ele>
-        <time>2025-07-31T21:46:24Z</time>
-      </trkpt>
-      <trkpt lat="30.640985333333333" lon="-96.4872935">
-        <ele>81.9</ele>
-        <time>2025-07-31T21:46:25Z</time>
-      </trkpt>
-      <trkpt lat="30.640984666666668" lon="-96.487302">
-        <ele>81.7</ele>
-        <time>2025-07-31T21:46:26Z</time>
-      </trkpt>
-      <trkpt lat="30.640983833333333" lon="-96.48731033333334">
-        <ele>81.5</ele>
-        <time>2025-07-31T21:46:27Z</time>
-      </trkpt>
-      <trkpt lat="30.640983" lon="-96.48731866666667">
-        <ele>81.5</ele>
-        <time>2025-07-31T21:46:28Z</time>
-      </trkpt>
-      <trkpt lat="30.640982" lon="-96.48732716666666">
-        <ele>81.3</ele>
-        <time>2025-07-31T21:46:29Z</time>
-      </trkpt>
-      <trkpt lat="30.640976" lon="-96.48736783333334">
-        <ele>80.2</ele>
-        <time>2025-07-31T21:46:34Z</time>
-      </trkpt>
+      
       <trkpt lat="30.640974833333335" lon="-96.487376">
         <ele>80.3</ele>
         <time>2025-07-31T21:46:35Z</time>
